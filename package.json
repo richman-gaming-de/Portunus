@@ -1,18 +1,51 @@
 {
-  "scripts": {
-    "build": "npm run clean && npm run tsc && npm run copy && npm run uglify",
-    "copy": "copyfiles src/**/* --exclude=**/*.ts --up 1 ./dist",
-    "uglify": "uglifyjs-folder dist -e -x .js -o dist",
-    "clean": "rimraf dist/*",
-    "tsc": "cd src && tsc",
-    "start": "npm run build && node dist/."
-  },
-  "type": "module",
-  "devDependencies": {
-    "@types/node": "^22.7.5",
-    "copyfiles": "^2.4.1",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.6.3",
-    "uglifyjs-folder": "^3.3.0"
-  }
+    "name": "portunus",
+    "version": "1.0.0",
+    "description": "Hüter der Ports, Wächter der Container.",
+    "keywords": [
+        "docker"
+    ],
+    "homepage": "https://github.com/richman-gaming-de/Portunus#readme",
+    "bugs": {
+        "url": "https://github.com/richman-gaming-de/Portunus/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/richman-gaming-de/Portunus.git"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Richman-Gaming.de",
+            "email": "info@richman-gaming.de"
+        },
+        {
+            "name": "ExXTreMe",
+            "email": "exxtreme@richman-gaming.de"
+        }
+    ],
+    "type": "module",
+    "scripts": {
+        "build": "npm run clean && npm run tsc && npm run copy && npm run uglify",
+        "copy": "copyfiles src/**/* --exclude=**/*.ts --up 1 ./dist",
+        "uglify": "uglifyjs-folder dist -e -x .js -o dist",
+        "clean": "rimraf dist/*",
+        "tsc": "cd src && tsc",
+        "start": "npm run build && node dist/.",
+        "dev": "echo 'Bau es ein dann kannst du es nutzen du N00b!'"
+    },
+    "dependencies": {
+        "axios": "^1.13.3",
+        "dockerode": "^4.0.9",
+        "dotenv": "^17.2.3"
+    },
+    "devDependencies": {
+        "@types/axios": "^0.9.36",
+        "@types/dockerode": "^4.0.1",
+        "@types/node": "^22.19.7",
+        "copyfiles": "^2.4.1",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.6.3",
+        "uglifyjs-folder": "^3.3.0"
+    }
 }
