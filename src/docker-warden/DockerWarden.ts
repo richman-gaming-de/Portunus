@@ -67,7 +67,26 @@ export class DockerWarden {
                 const imageInspectInfo = await image.inspect()
 
                 // Try to get image name from RepoTags first, then RepoDigests
-                let imageName = imageInspectInfo.RepoDigests[0].split('@')[0]
+                let imageName: string | undefined
+
+                if (imageInspectInfo.RepoTags?.[0]) {
+                    imageName = imageInspectInfo.RepoTags[0]
+                } else if (imageInspectInfo.RepoDigests?.[0]) {
+                    imageName = imageInspectInfo.RepoDigests[0].split('@')[0]
+                }
+
+                if (!imageName) {
+                    console.warn(
+                        `Could not determine image name for container ${name}`
+                    )
+                    this.alertings.forEach((alerting) => {
+                        alerting.warn({
+                            message: `Could not determine image name (no tags or digests found)`,
+                            title: `Container ${name} - Check Skipped`
+                        })
+                    })
+                    return
+                }
 
                 console.log(`Checking for updates for image: ${imageName}...`)
 

@@ -1,0 +1,11 @@
+services:
+    portunus:
+        image: portunus:latest
+        container_name: portunus
+
+        # access to Docker daemon
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+
+        environment:
+            - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}

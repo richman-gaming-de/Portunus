@@ -10,6 +10,8 @@ RUN npm run build
 FROM node:slim AS production
 WORKDIR /app
 COPY --from=builder /app/dist ./
+COPY --from=builder /app/package*.json ./
+RUN npm install --production
 
 # Definiere den Befehl zum Starten deiner Anwendung
 CMD [ "node", "index.js" ]
