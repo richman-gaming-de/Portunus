@@ -80,11 +80,7 @@ export class DiscordAlerting extends Alerting {
         }
 
         try {
-            console.log(
-                `[DEBUG] skipping Discord Webhook send:`,
-                payload.embeds
-            )
-            //axios.post(this.webhookUrl, payload)
+            axios.post(this.webhookUrl, payload)
         } catch (err) {
             console.error(`Error sending Discord Webhook:`, err.message)
         }
