@@ -140,6 +140,12 @@ export class DockerWarden {
 
     private async getImageInfoFromRegistry(imageName: string) {
         try {
+            // Skip private registries like ghcr.io for now
+            if (imageName.includes('ghcr.io')) {
+                console.log(`Skipping registry check for ghcr image: ${imageName}`)
+                return null
+            }
+
             console.log('>>>>>>>>>>DEBUG<<<<<<<<<<')
             console.log(`Fetching image info for ${imageName} from registry...`)
             // Format: docker.io/library/mariadb:latest oder mariadb:latest
