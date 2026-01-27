@@ -1,7 +1,7 @@
 name: Push Branch Main
 on:
     push:
-        branches: ['dev', '*-build', '*-b']
+        branches: ['dev', '*--build', '*--b']
 
 env:
     REGISTRY: ghcr.io
