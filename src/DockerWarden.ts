@@ -1,7 +1,6 @@
 import Docker from 'dockerode'
-import { Alerting, AlertingMessage } from '../alertings'
-import { getDockerHubImage, DockerHubTagResponse } from './dockerHub.js'
-import { getGHCRImage } from './ghcr.js'
+import { Alerting, AlertingMessage } from './alertings'
+import { getImageInfo } from './registries/getImageInfo.js'
 
 export class DockerWarden {
     private docker: Docker
@@ -79,18 +78,15 @@ export class DockerWarden {
                 console.log(`Checking for updates for image: ${imageName}...`)
 
                 // Get image info from registry without pulling
-                const registryInfo = await this.getImageInfoFromRegistry(imageName)
+                const registryInfo = await getImageInfo(imageName)
                 if (registryInfo) {
                     // Compare with local image digest
                     const localDigest = imageInspectInfo.RepoDigests[0].split('@')[1]
-                    console.log('>>>>>>>>>>DEBUG<<<<<<<<<<')
-                    console.log('Local Digest:', localDigest)
-                    console.log('Registry Digest:', registryInfo.tagResponse.digest)
-                    console.log('Registry Images:', registryInfo.images)
-                    console.log('<<<<<<<<<<DEBUG>>>>>>>>>>')
 
+                    console.log(`Local Digest: ${localDigest}`)
+                    console.log(`Latest Registry Digest: ${registryInfo.latestDigest}`)
 
-                    if (registryInfo.tagResponse.digest === localDigest || registryInfo.images.some(img => img.digest === localDigest)) {
+                    if (registryInfo.latestDigest === localDigest || registryInfo.allDigests.some(digest => digest === localDigest)) {
                         console.log(`Image ${imageName} is already up to date`)
                         messages.push({
                             title: `Container ${name} - No Update Available`,
@@ -134,31 +130,6 @@ export class DockerWarden {
         })
     }
 
-    private async getImageInfoFromRegistry(imageName: string): Promise<{
-        name: string
-        description: string
-        lastUpdated: string
-        tagResponse: DockerHubTagResponse | undefined
-        images: {
-            size: any
-            digest: any
-        }[]
-    }> {
-        if (imageName.split('/').length > 2) {
-            // Private registry
-            switch (imageName.split('/')[0]) {
-                case 'ghcr.io':
-                    return getGHCRImage(imageName)
-                default:
-                    console.log(
-                        `Unsupported private registry for image: ${imageName}`
-                    )
-                    return null
-            }
-        }
-
-        return getDockerHubImage(imageName)
-    }
 
     addAlerting(alerting: Alerting) {
         this.alertings.push(alerting)

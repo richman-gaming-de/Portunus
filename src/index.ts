@@ -1,5 +1,5 @@
 import { DiscordAlerting } from './alertings/discord.js'
-import { DockerWarden } from './docker-warden/DockerWarden.js'
+import { DockerWarden } from './DockerWarden.js'
 import { CronJob } from 'cron'
 import { portunusConfig } from './config.js'
 
@@ -26,9 +26,6 @@ async function init() {
     warden.addAlerting(new DiscordAlerting(discordWebhook))
 
     console.log('Initialization complete. Starting scheduled jobs...')
-
-    // @ToDo: Remove for production
-    await warden.checkForUpdates()
 }
 
 init()
