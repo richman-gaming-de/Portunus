@@ -1,6 +1,6 @@
 services:
     portunus:
-        image: ghcr.io/richman-gaming-de/portunus:latest
+        image: ghcr.io/richman-gaming-de/portunus:dev
         container_name: portunus
 
         # access to Docker daemon

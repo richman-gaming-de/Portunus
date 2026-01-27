@@ -142,17 +142,15 @@ export class DockerWarden {
         try {
             // Skip private registries like ghcr.io for now
             if (imageName.includes('ghcr.io')) {
-                console.log(`Skipping registry check for ghcr image: ${imageName}`)
+                console.log(
+                    `Skipping registry check for ghcr image: ${imageName}`
+                )
                 return null
             }
 
-            console.log('>>>>>>>>>>DEBUG<<<<<<<<<<')
-            console.log(`Fetching image info for ${imageName} from registry...`)
             // Format: docker.io/library/mariadb:latest oder mariadb:latest
             const [name, tag = 'latest'] = imageName.split(':')
-            console.log(`Parsed name: ${name}, tag: ${tag}`)
             const normalizedName = name.includes('/') ? name : `library/${name}`
-            console.log(`Normalized name for Docker Hub: ${normalizedName}`)
 
             // Docker Hub API
             const response = await axios.get<DockerHubRepositoryResponse>(
