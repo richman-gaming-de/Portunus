@@ -1,12 +1,20 @@
 import { DiscordAlerting } from './alertings/discord.js'
-import { DockerWarden } from './docker-warden/DockerWarden.js'
-import dotenv from 'dotenv'
+import { DockerWarden } from './DockerWarden.js'
+import { CronJob } from 'cron'
+import { portunusConfig } from './config.js'
 
-dotenv.config()
+const config = portunusConfig()
 
 const warden = new DockerWarden()
 
 const discordWebhook = process.env.DISCORD_WEBHOOK_URL || ''
+
+new CronJob(config.cron, async () => {
+    // läuft jeden Tag um Mitternacht
+    console.log('Running scheduled DockerWarden checkForUpdates...')
+
+    await warden.checkForUpdates()
+}, null, true, config.timezone)
 
 async function init() {
     const connectionSuccessawait = await warden.testConnection()
@@ -17,7 +25,7 @@ async function init() {
 
     warden.addAlerting(new DiscordAlerting(discordWebhook))
 
-    await warden.checkForUpdates()
+    console.log('Initialization complete. Starting scheduled jobs...')
 }
 
 init()

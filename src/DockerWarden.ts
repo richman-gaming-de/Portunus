@@ -1,7 +1,6 @@
 import Docker from 'dockerode'
-import { Alerting, AlertingMessage } from '../alertings'
-import { getDockerHubImage } from './dockerHub.js'
-import { getGHCRImage } from './ghcr.js'
+import { Alerting, AlertingMessage } from './alertings'
+import { getImageInfo } from './registries/getImageInfo.js'
 
 export class DockerWarden {
     private docker: Docker
@@ -79,31 +78,40 @@ export class DockerWarden {
                 console.log(`Checking for updates for image: ${imageName}...`)
 
                 // Get image info from registry without pulling
-                const registryInfo = await this.getImageInfoFromRegistry(imageName)
+                const registryInfo = await getImageInfo(imageName)
                 if (registryInfo) {
                     // Compare with local image digest
-                    const localDigest = imageInspectInfo.RepoDigests[0]
-                    const registryDigest = registryInfo.digest
+                    const localDigest = imageInspectInfo.RepoDigests[0].split('@')[1]
 
-                    if (localDigest === registryDigest) {
+                    console.log(`Local Digest: ${localDigest}`)
+                    console.log(`Latest Registry Digest: ${registryInfo.latestDigest}`)
+
+                    if (registryInfo.latestDigest === localDigest || registryInfo.allDigests.some(digest => digest === localDigest)) {
                         console.log(`Image ${imageName} is already up to date`)
                         messages.push({
                             title: `Container ${name} - No Update Available`,
-                            description: `Image is up to date`,
+                            description: `Image is up to date\nImage: ${imageName}`,
                             type: 'success'
                         })
                     } else {
                         console.log(`New version available for ${imageName}`)
                         messages.push({
                             title: `Container ${name} - Update Available`,
-                            description: `New version available\nLast Updated: ${registryInfo.lastUpdated}\nSize: ${(registryInfo.imageSize / 1024 / 1024).toFixed(2)} MB`,
-                            type: 'info'
+                            description: `New version available\nImage: ${imageName}\nLast Updated: ${registryInfo.lastUpdated}`,
+                            type: 'info',
+                            fields: [
+                                {
+                                    name: 'Local Digest',
+                                    value: localDigest,
+                                    inline: false
+                                }
+                            ]
                         })
                     }
                 } else {
                     messages.push({
                         title: `Container ${name} - Check Failed`,
-                        description: `Could not fetch image info from registry`,
+                        description: `Could not fetch image info from registry\nImage: ${imageName}`,
                         type: 'warn'
                     })
                 }
@@ -122,22 +130,6 @@ export class DockerWarden {
         })
     }
 
-    private async getImageInfoFromRegistry(imageName: string) {
-        if (imageName.split('/').length > 2) {
-            // Private registry
-            switch (imageName.split('/')[0]) {
-                case 'ghcr.io':
-                    return getGHCRImage(imageName)
-                default:
-                    console.log(
-                        `Unsupported private registry for image: ${imageName}`
-                    )
-                    return null
-            }
-        }
-
-        return getDockerHubImage(imageName)
-    }
 
     addAlerting(alerting: Alerting) {
         this.alertings.push(alerting)

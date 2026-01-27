@@ -1,7 +1,14 @@
+export interface AlertField {
+    name: string
+    value: string
+    inline?: boolean
+}
+
 export interface AlertingMessage {
     title: string
     description: string
     type?: 'success' | 'info' | 'warn' | 'error'
+    fields?: AlertField[]
 }
 
 export class Alerting {
