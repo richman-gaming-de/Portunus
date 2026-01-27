@@ -14,3 +14,10 @@ Für die Benachrichtigung solen unter anderem folgende wege zur verfügung stehe
   - nodemailer
   - node-cron
   - axios
+
+## ToDo
+- [ ] Dockerhub Authentifizierung implementieren
+- [ ] GitHub Container Registry Authentifizierung implementieren
+- [ ] Mehr Registry unterstützungen (GitLab, Quay.io, etc.)
+- [ ] Config zur einfacheren konfiguration
+- [ ] Mehr Benachrichtigungswege (Telegram, Slack, etc.)

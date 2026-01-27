@@ -36,57 +36,6 @@ export class DiscordAlerting extends Alerting {
         this.sendWebhook(embeds)
     }
 
-    async info(config: { title?: string; message: string }) {
-        const embeds = [
-            {
-                title: config.title || 'Portunus Info',
-                description: config.message,
-                color: 3447003 // Blue color
-            }
-        ]
-
-        try {
-            await this.sendWebhook(embeds)
-            console.log(`Info sent to Discord successfully`)
-        } catch (err) {
-            console.error(`Error sending Discord Info:`, err.message)
-        }
-    }
-
-    async warn(config: { title?: string; message: string }) {
-        const embeds = [
-            {
-                title: config.title || 'Portunus Warning',
-                description: config.message,
-                color: 16762112 // Yellow color
-            }
-        ]
-
-        try {
-            await this.sendWebhook(embeds)
-            console.log(`Warning sent to Discord successfully`)
-        } catch (err) {
-            console.error(`Error sending Discord Warning:`, err.message)
-        }
-    }
-
-    async alert(config: { title?: string; message: string }) {
-        const embeds = [
-            {
-                title: config.title || 'Portunus Alert',
-                description: config.message,
-                color: 16731392 // Orange color
-            }
-        ]
-
-        try {
-            await this.sendWebhook(embeds)
-            console.log(`Alert sent to Discord successfully`)
-        } catch (err) {
-            console.error(`Error sending Discord Alert:`, err.message)
-        }
-    }
-
     async error(config: { title?: string; message: string }) {
         const embeds = [
             {
@@ -131,7 +80,11 @@ export class DiscordAlerting extends Alerting {
         }
 
         try {
-            axios.post(this.webhookUrl, payload)
+            console.log(
+                `[DEBUG] skipping Discord Webhook send:`,
+                payload.embeds
+            )
+            //axios.post(this.webhookUrl, payload)
         } catch (err) {
             console.error(`Error sending Discord Webhook:`, err.message)
         }

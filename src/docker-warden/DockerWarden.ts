@@ -1,20 +1,7 @@
 import Docker from 'dockerode'
-import axios from 'axios'
 import { Alerting, AlertingMessage } from '../alertings'
-
-interface DockerHubRepositoryResponse {
-    description: string
-}
-
-interface DockerHubImage {
-    size: number
-    digest: string
-}
-
-interface DockerHubTagResponse {
-    last_updated: string
-    images: DockerHubImage[]
-}
+import { getDockerHubImage } from './dockerHub.js'
+import { getGHCRImage } from './ghcr.js'
 
 export class DockerWarden {
     private docker: Docker
@@ -92,11 +79,8 @@ export class DockerWarden {
                 console.log(`Checking for updates for image: ${imageName}...`)
 
                 // Get image info from registry without pulling
-                const registryInfo =
-                    await this.getImageInfoFromRegistry(imageName)
+                const registryInfo = await this.getImageInfoFromRegistry(imageName)
                 if (registryInfo) {
-                    console.log('Image Info from Registry:', registryInfo)
-
                     // Compare with local image digest
                     const localDigest = imageInspectInfo.RepoDigests[0]
                     const registryDigest = registryInfo.digest
@@ -139,76 +123,23 @@ export class DockerWarden {
     }
 
     private async getImageInfoFromRegistry(imageName: string) {
-        try {
-            // Skip private registries like ghcr.io for now
-            if (imageName.includes('ghcr.io')) {
-                console.log(
-                    `Skipping registry check for ghcr image: ${imageName}`
-                )
-                return null
+        if (imageName.split('/').length > 2) {
+            // Private registry
+            switch (imageName.split('/')[0]) {
+                case 'ghcr.io':
+                    return getGHCRImage(imageName)
+                default:
+                    console.log(
+                        `Unsupported private registry for image: ${imageName}`
+                    )
+                    return null
             }
-
-            // Format: docker.io/library/mariadb:latest oder mariadb:latest
-            const [name, tag = 'latest'] = imageName.split(':')
-            const normalizedName = name.includes('/') ? name : `library/${name}`
-
-            // Docker Hub API
-            const response = await axios.get<DockerHubRepositoryResponse>(
-                `https://hub.docker.com/v2/repositories/${normalizedName}/`,
-                {
-                    headers: {
-                        Accept: 'application/json'
-                    }
-                }
-            )
-
-            const tagResponse = await axios.get<DockerHubTagResponse>(
-                `https://hub.docker.com/v2/repositories/${normalizedName}/tags/${tag}/`,
-                {
-                    headers: {
-                        Accept: 'application/json'
-                    }
-                }
-            )
-
-            return {
-                name: imageName,
-                description: response.data.description,
-                lastUpdated: tagResponse.data.last_updated,
-                imageSize: tagResponse.data.images?.[0]?.size || 0,
-                digest: tagResponse.data.images?.[0]?.digest
-            }
-        } catch (err) {
-            console.error(
-                `Error fetching image info from registry:`,
-                err.message
-            )
-            return null
         }
+
+        return getDockerHubImage(imageName)
     }
 
     addAlerting(alerting: Alerting) {
         this.alertings.push(alerting)
-    }
-
-    async debug() {
-        this.alertings.forEach((alerting) => {
-            alerting.info({
-                message: 'DockerWarden debug alert',
-                title: 'Debug'
-            })
-            alerting.warn({
-                message: 'DockerWarden debug warning',
-                title: 'Debug'
-            })
-            alerting.alert({
-                message: 'DockerWarden debug alert',
-                title: 'Debug'
-            })
-            alerting.error({
-                message: 'DockerWarden debug error',
-                title: 'Debug'
-            })
-        })
     }
 }
