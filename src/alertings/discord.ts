@@ -3,10 +3,17 @@ import { Alerting, AlertingMessage } from './index.js'
 
 // 32768 -> Green
 
+export interface EmbedField {
+    name: string
+    value: string
+    inline?: boolean
+}
+
 export interface EmbedConfig {
     title: string
     description: string
     color?: number
+    fields?: EmbedField[]
 }
 
 const colorCodeMapDec = new Map<string, number>([
@@ -29,7 +36,8 @@ export class DiscordAlerting extends Alerting {
             return {
                 title: msg.title,
                 description: msg.description,
-                color: colorCodeMapDec.get(msg.type)
+                color: colorCodeMapDec.get(msg.type),
+                fields: msg.fields
             }
         })
 
@@ -75,7 +83,12 @@ export class DiscordAlerting extends Alerting {
                 title: this.formatTitle(embed.title, 256),
                 description: this.truncateMessage(embed.description, 2048),
                 color: embed.color || 3447003,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                fields: embed.fields?.map((field) => ({
+                    name: this.formatTitle(field.name, 256),
+                    value: this.truncateMessage(field.value, 1024),
+                    inline: field.inline || false
+                }))
             }))
         }
 

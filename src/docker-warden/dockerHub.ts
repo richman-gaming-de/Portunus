@@ -3,14 +3,38 @@ import axios from "axios"
 interface DockerHubRepositoryResponse {
     description: string
 }
-interface DockerHubImage {
-    size: number
-    digest: string
+
+export interface DockerHubTagResponse {
+    creator: number
+    id: number
+    images: DockerHubImage[]
+    last_updated: string
+    last_updater: number
+    last_updater_username: string
+    name: string
+    repository: number
+    full_size: number
+    v2: boolean
+    tag_status: string
+    tag_last_pulled: string
+    tag_last_pushed: string
+    media_type: string
+    content_type: string
+    digest: string 
 }
 
-interface DockerHubTagResponse {
-    last_updated: string
-    images: DockerHubImage[]
+export interface DockerHubImage {
+    architecture: string
+    features: string
+    variant: string | null
+    digest: string
+    os: string
+    os_features: string
+    os_version: string | null
+    size: number
+    status: string
+    last_pulled: string
+    last_pushed: string
 }
 
 export async function getDockerHubImage(imageName: string) {
@@ -49,9 +73,9 @@ export async function getDockerHubImage(imageName: string) {
         return {
             name: imageName,
             description: response.data.description,
+            tagResponse: tagResponse.data as DockerHubTagResponse,
             lastUpdated: tagResponse.data.last_updated,
-            imageSize: tagResponse.data.images?.[0]?.size || 0,
-            digest: tagResponse.data.images?.[0]?.digest
+            images: tagResponse.data.images
         }
     } catch (err) {
         console.error(

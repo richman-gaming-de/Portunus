@@ -47,9 +47,12 @@ export async function getGHCRImage(imageName: string) {
         return {
             name: imageName,
             description: repositoryPath,
-            lastUpdated: manifest.created || new Date().toISOString(), 
-            imageSize: imageSize,
-            digest: digest
+            lastUpdated: manifest.created || new Date().toISOString(),
+            tagResponse: undefined,
+            images: [ {
+                size: imageSize,
+                digest: digest
+            } ]
         }
 
     } catch (err: any) {
