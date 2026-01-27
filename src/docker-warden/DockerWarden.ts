@@ -1,6 +1,6 @@
 import Docker from 'dockerode'
 import axios from 'axios'
-import { Alerting } from '../alertings'
+import { Alerting, AlertingMessage } from '../alertings'
 
 interface DockerHubRepositoryResponse {
     description: string
@@ -57,7 +57,9 @@ export class DockerWarden {
     async checkForUpdates() {
         const containerInfoList = await this.getContainerInfos()
 
-        containerInfoList.forEach(async (containerInfo) => {
+        let messages: AlertingMessage[] = []
+
+        for (const containerInfo of containerInfoList) {
             const imageID = containerInfo.ImageID
             const name = containerInfo.Names[0].substring(1)
 
@@ -79,13 +81,12 @@ export class DockerWarden {
                     console.warn(
                         `Could not determine image name for container ${name}`
                     )
-                    this.alertings.forEach((alerting) => {
-                        alerting.warn({
-                            message: `Could not determine image name (no tags or digests found)`,
-                            title: `Container ${name} - Check Skipped`
-                        })
+                    messages.push({
+                        title: `Container ${name} - Check Skipped`,
+                        description: `Could not determine image name (no tags or digests found)`,
+                        type: 'warn'
                     })
-                    return
+                    continue
                 }
 
                 console.log(`Checking for updates for image: ${imageName}...`)
@@ -102,38 +103,38 @@ export class DockerWarden {
 
                     if (localDigest === registryDigest) {
                         console.log(`Image ${imageName} is already up to date`)
-                        this.alertings.forEach((alerting) => {
-                            alerting.info({
-                                message: `Image is up to date`,
-                                title: `Container ${name} - No Update Available`
-                            })
+                        messages.push({
+                            title: `Container ${name} - No Update Available`,
+                            description: `Image is up to date`,
+                            type: 'success'
                         })
                     } else {
                         console.log(`New version available for ${imageName}`)
-                        this.alertings.forEach((alerting) => {
-                            alerting.alert({
-                                message: `New version available\nLast Updated: ${registryInfo.lastUpdated}\nSize: ${(registryInfo.imageSize / 1024 / 1024).toFixed(2)} MB`,
-                                title: `Container ${name} - Update Available`
-                            })
+                        messages.push({
+                            title: `Container ${name} - Update Available`,
+                            description: `New version available\nLast Updated: ${registryInfo.lastUpdated}\nSize: ${(registryInfo.imageSize / 1024 / 1024).toFixed(2)} MB`,
+                            type: 'info'
                         })
                     }
                 } else {
-                    this.alertings.forEach((alerting) => {
-                        alerting.error({
-                            message: `Could not fetch image info from registry`,
-                            title: `Container ${name} - Check Failed`
-                        })
+                    messages.push({
+                        title: `Container ${name} - Check Failed`,
+                        description: `Could not fetch image info from registry`,
+                        type: 'warn'
                     })
                 }
             } catch (err) {
                 console.error(`Error checking updates for image:`, err.message)
-                this.alertings.forEach((alerting) => {
-                    alerting.error({
-                        message: `Error checking updates: ${err.message}`,
-                        title: `Container ${name} - Check Failed`
-                    })
+                messages.push({
+                    title: `Container ${containerInfo.Names[0].substring(1)} - Check Failed`,
+                    description: `Error checking updates: ${err.message}`,
+                    type: 'error'
                 })
             }
+        }
+
+        this.alertings.forEach((alerting) => {
+            alerting.sendStack(messages)
         })
     }
 

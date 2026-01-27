@@ -1,11 +1,20 @@
 import axios from 'axios'
-import { Alerting } from './index.js'
+import { Alerting, AlertingMessage } from './index.js'
 
-interface EmbedConfig {
+// 32768 -> Green
+
+export interface EmbedConfig {
     title: string
     description: string
     color?: number
 }
+
+const colorCodeMapDec = new Map<string, number>([
+    ['success', 32768], // Green
+    ['info', 3447003], // Blue
+    ['warn', 16731392], // Orange
+    ['error', 16711680] // Red
+])
 
 export class DiscordAlerting extends Alerting {
     protected webhookUrl: string
@@ -13,6 +22,18 @@ export class DiscordAlerting extends Alerting {
     constructor(webhookUrl: string) {
         super()
         this.webhookUrl = webhookUrl
+    }
+
+    async sendStack(messages: AlertingMessage[]) {
+        const embeds: EmbedConfig[] = messages.map((msg) => {
+            return {
+                title: msg.title,
+                description: msg.description,
+                color: colorCodeMapDec.get(msg.type)
+            }
+        })
+
+        this.sendWebhook(embeds)
     }
 
     async info(config: { title?: string; message: string }) {
@@ -108,6 +129,7 @@ export class DiscordAlerting extends Alerting {
                 timestamp: new Date().toISOString()
             }))
         }
+
         try {
             axios.post(this.webhookUrl, payload)
         } catch (err) {
