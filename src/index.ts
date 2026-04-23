@@ -17,8 +17,8 @@ new CronJob(config.cron, async () => {
 }, null, true, config.timezone)
 
 async function init() {
-    const connectionSuccessawait = await warden.testConnection()
-    if (!connectionSuccessawait) {
+    const connectionSuccessAwait = await warden.testConnection()
+    if (!connectionSuccessAwait) {
         console.error('Docker connection failed. Exiting.')
         return
     }
