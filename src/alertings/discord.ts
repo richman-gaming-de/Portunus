@@ -41,7 +41,7 @@ export class DiscordAlerting extends Alerting {
             }
         })
 
-        this.sendWebhook(embeds)
+        await this.sendWebhook(embeds)
     }
 
     async error(config: { title?: string; message: string }) {
@@ -76,26 +76,36 @@ export class DiscordAlerting extends Alerting {
     }
 
     private async sendWebhook(embedConfigs: EmbedConfig[]) {
-        const payload = {
-            username: 'Portunus Alerting',
-            avatar_url: 'https://cdn.richman-gaming.de/portunus/logo.png',
-            embeds: embedConfigs.map((embed) => ({
-                title: this.formatTitle(embed.title, 256),
-                description: this.truncateMessage(embed.description, 2048),
-                color: embed.color || 3447003,
-                timestamp: new Date().toISOString(),
-                fields: embed.fields?.map((field) => ({
-                    name: this.formatTitle(field.name, 256),
-                    value: this.truncateMessage(field.value, 1024),
-                    inline: field.inline || false
-                }))
-            }))
+        // Discord allows maximum 10 embeds per webhook message
+        const maxEmbedsPerMessage = 10
+        const batches: EmbedConfig[][] = []
+
+        for (let i = 0; i < embedConfigs.length; i += maxEmbedsPerMessage) {
+            batches.push(embedConfigs.slice(i, i + maxEmbedsPerMessage))
         }
 
-        try {
-            axios.post(this.webhookUrl, payload)
-        } catch (err) {
-            console.error(`Error sending Discord Webhook:`, err.message)
+        for (const batch of batches) {
+            const payload = {
+                username: 'Portunus Alerting',
+                avatar_url: 'https://cdn.richman-gaming.de/portunus/logo.png',
+                embeds: batch.map((embed) => ({
+                    title: this.formatTitle(embed.title, 256),
+                    description: this.truncateMessage(embed.description, 2048),
+                    color: embed.color || 3447003,
+                    timestamp: new Date().toISOString(),
+                    fields: embed.fields?.map((field) => ({
+                        name: this.formatTitle(field.name, 256),
+                        value: this.truncateMessage(field.value, 1024),
+                        inline: field.inline || false
+                    }))
+                }))
+            }
+
+            try {
+                await axios.post(this.webhookUrl, payload)
+            } catch (err) {
+                console.error(`Error sending Discord Webhook:`, err.message)
+            }
         }
     }
 }
