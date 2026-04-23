@@ -11,6 +11,8 @@ const discordWebhook = process.env.DISCORD_WEBHOOK_URL || ''
 
 new CronJob(config.cron, async () => {
     // läuft jeden Tag um Mitternacht
+    console.log(`Current Docker version: ${await warden.getDockerVersion()}`)
+    console.log(`Current Cron: ${config.cron}`)
     console.log('Running scheduled DockerWarden checkForUpdates...')
 
     await warden.checkForUpdates()
