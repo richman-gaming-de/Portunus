@@ -32,6 +32,7 @@
         "clean": "rimraf dist/*",
         "tsc": "cd src && tsc",
         "start": "pnpm build && node dist/.",
+        "start:compose": "docker compose -f ./docker-compose.local.yml up --build",
         "dev": "echo 'Bau es ein dann kannst du es nutzen du N00b!'"
     },
     "dependencies": {

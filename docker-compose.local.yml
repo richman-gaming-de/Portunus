@@ -1,7 +1,11 @@
 services:
     portunus:
-        image: ghcr.io/richman-gaming-de/portunus:latest
+        image: portunus:latest
         container_name: portunus
+        build:
+            context: .
+            dockerfile: Dockerfile
+            no_cache: true
 
         # access to Docker daemon
         volumes:

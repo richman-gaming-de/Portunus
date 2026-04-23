@@ -32,6 +32,7 @@ export class DiscordAlerting extends Alerting {
     }
 
     async sendStack(messages: AlertingMessage[]) {
+        console.log(`Sending ${messages.length} alert(s) to Discord...`)
         const embeds: EmbedConfig[] = messages.map((msg) => {
             return {
                 title: msg.title,
@@ -103,6 +104,7 @@ export class DiscordAlerting extends Alerting {
 
             try {
                 await axios.post(this.webhookUrl, payload)
+                console.log(`Discord Webhook sent successfully with ${batch.length} embed(s)`)
             } catch (err) {
                 console.error(`Error sending Discord Webhook:`, err.message)
             }

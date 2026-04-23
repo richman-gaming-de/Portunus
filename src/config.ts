@@ -17,7 +17,7 @@ export interface PortunusConfig {
 
 export function portunusConfig(): PortunusConfig {
     return {
-        cron: '* * * * *',
+        cron: process.env.CRON || '0 0 * * *',
         timezone: 'Europe/Berlin',
 
         alerting: {
